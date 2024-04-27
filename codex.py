@@ -1,5 +1,8 @@
 import json
 import openai
+from openai import OpenAI
+
+client = OpenAI()
 import os
 import time
 from consts import CONSTS
@@ -67,29 +70,25 @@ class CodeGen():
                 try:
                     time.sleep(8)
                     if logit_bias is None:
-                        completions = openai.Completion.create(
-                            model=model_name,
-                            prompt=codex_in,
-                            max_tokens=max_tokens,
-                            temperature=temperature,
-                            presence_penalty=presence_penalty,
-                            stop=stop,
-                            n=num_completions,
-                        )['choices']
+                        completions = client.completions.create(model=model_name,
+                        prompt=codex_in,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        presence_penalty=presence_penalty,
+                        stop=stop,
+                        n=num_completions)['choices']
                     else:
-                        completions = openai.Completion.create(
-                            model=model_name,
-                            prompt=codex_in,
-                            max_tokens=max_tokens,
-                            temperature=temperature,
-                            presence_penalty=presence_penalty,
-                            stop=stop,
-                            n=num_completions,
-                            logit_bias=logit_bias
-                        )['choices']
+                        completions = client.completions.create(model=model_name,
+                        prompt=codex_in,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        presence_penalty=presence_penalty,
+                        stop=stop,
+                        n=num_completions,
+                        logit_bias=logit_bias)['choices']
                     self.exponential_backoff = 1
                     break
-                except openai.error.RateLimitError:
+                except openai.RateLimitError:
                     print("Rate limit reached. Waiting before retrying...")
                     time.sleep(16 * self.exponential_backoff)
                     self.exponential_backoff *= 2
